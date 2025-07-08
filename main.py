@@ -59,28 +59,30 @@ def main():
 
     c_0 = 1
     c_1_base = 0.5
-    k=0.3
+    k = 0.3
     # k_values = np.linspace(0.1, 0.5, 5)
     # t0 = 20.0
     t0_values = np.linspace(20, 50, 5)
 
     fig, ax1 = plt.subplots()
     ax2 = plt.twinx()
+    v_normal = 1 + v1.potential / (v1.potential[-1]-v1.potential[0])
     for n, t0 in enumerate(t0_values):
         c_1 = c_1_base
         # resist_1[n] = Resistance.poly(t.t, c_0, c_1, c, c_3)
         resist_1[n] = Resistance.sigmoid(t.t, c_0, c_1, k, t0)
-        resist_2[n] = resist_1[n][-1]
+        
         i_1[n] = v1.potential/resist_1[n]
-        
-        ax1.plot(v1.potential, i_1[n], label=f"k = {k:0.2f}", linestyle="solid")
-        ax2.plot(v1.potential, resist_1[n], label=f"r = {resist_1[n][-1]:0.2f}", linestyle="dashed")
-        
-    ax1.set_xlabel("Volts ")
-    ax1.set_ylabel("Current ")
-    ax1.legend(loc='upper left')
-    ax2.legend(loc='upper right')
-    ax2.set_ylabel("Resistance")
+        i_normal = 1 + i_1[n] / (i_1[n][-1] - i_1[n][0])
+
+        ax1.plot(v_normal, i_normal, label=f"k = {k:0.2f}", linestyle="solid")
+        ax2.plot(v_normal, resist_1[n], label=f"r = {resist_1[n][-1]:0.2f}", linestyle="dashed")
+
+    ax1.set_xlabel("Normalized volt")
+    ax1.set_ylabel("Normalized Current (—)")
+    # ax1.legend(loc='upper left')
+    # ax2.legend(loc='upper right')
+    ax2.set_ylabel("Normalized resistance (--)")
     plt.show()
 
 
