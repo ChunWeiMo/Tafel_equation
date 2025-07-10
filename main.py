@@ -70,18 +70,38 @@ class Current:
             i[n] = v.potential/resist_1[n]
             i_normal[n] = 1 + i[n] / (i[n][-1] - i[n][0])
 
-        return i_normal, resist_1, c_2_values
+        return i, resist_1, c_2_values
+
+    @staticmethod
+    def tafel(v, i0, a):
+        """
+        Description
+        ---
+        Tafel equation: v = a + log10(i/i0)
+
+        Parameters
+        ---
+        - v: overpotential
+        - i0: exchange current density
+        - a: Tafel slope
+
+        Returns
+        - i: current density
+        """
+        return i0 * 10 ** (v/a)
 
 
 def main():
     t = T(100, 1)
     v1 = Voltage(0.3, 1.0, t)
-    i_normal_all, resist_all, coefficients = Current.ohm(v1, t)
+    i_all, resist_all, coefficients = Current.ohm(v1, t)
+    i_tafal = Current.tafel(v1.potential, 1e-2, 1)
 
     fig, ax1 = plt.subplots()
     ax2 = plt.twinx()
 
-    for i, r, k in zip(i_normal_all, resist_all, coefficients):
+    ax1.plot(v1.potential*1000, i_tafal, label="tafal current", linestyle="dotted")
+    for i, r, k in zip(i_all, resist_all, coefficients):
         ax1.plot(v1.potential*1000, i, label=f"c_2 = {k:0.2e}", linestyle="solid")
         ax2.plot(v1.potential*1000, r, label=f"r = {r[-1]:0.2f}", linestyle="dashed")
 
