@@ -55,13 +55,15 @@ def tafel_equation(v, a, b):
 class Current:
     @staticmethod
     def ohm(v: Voltage, t: T):
-        resist_1 = np.zeros((11, len(t.t)))
-        i = np.zeros((11, len(t.t)))
-        i_normal = np.zeros((11, len(t.t)))
-
         c_0 = 1
         c_2_values = np.linspace(5e-7, 5e-5, 5)
         t_final = t.t[-1]
+        num_c2 = len(c_2_values)
+        num_t = len(t.t)
+
+        resist_1 = np.zeros((num_c2, num_t))
+        i = np.zeros((num_c2, num_t))
+        i_normal = np.zeros((num_c2, num_t))
 
         for n, c_2 in enumerate(c_2_values):
             c_1 = (0.6 - c_2 * (t_final ** 2))/t_final
