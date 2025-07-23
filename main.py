@@ -56,30 +56,31 @@ class Current:
     @staticmethod
     def ohm(v: Voltage, t: T):
         c_0 = 1
-        c_2_values = np.linspace(5e-7, 5e-5, 5)
+        c_1 = 0.6
+        t_0 = 40
+        k_values = np.linspace(0.01, 0.1, 5)
         t_final = t.t[-1]
-        num_c2 = len(c_2_values)
+        r_final = 1.6
+        num_k = len(k_values)
         num_t = len(t.t)
 
-        resist_1 = np.zeros((num_c2, num_t))
-        i = np.zeros((num_c2, num_t))
-        i_normal = np.zeros((num_c2, num_t))
+        resist_1 = np.zeros((num_k, num_t))
+        i = np.zeros((num_k, num_t))
+        i_normal = np.zeros((num_k, num_t))
 
-        for n, c_2 in enumerate(c_2_values):
-            c_1 = (0.6 - c_2 * (t_final ** 2))/t_final
-            resist_1[n] = Resistance.poly(t.t, c_0, c_1, c_2)
+        for n, k in enumerate(k_values):
+            resist_1[n] = Resistance.sigmoid(t.t, c_0, c_1, k, t_0)
 
             i[n] = v.potential/resist_1[n]
-            i_normal[n] = 1 + i[n] / (i[n][-1] - i[n][0])
 
-        return i, resist_1, c_2_values
+        return i, resist_1, k_values
 
     @staticmethod
     def tafel(v, i0, a):
         """
         Description
         ---
-        Tafel equation: v = a + log10(i/i0)
+        Tafel equation: v = a * log10(i/i0)
 
         Parameters
         ---
@@ -97,20 +98,39 @@ def main():
     t = T(100, 1)
     v1 = Voltage(0.3, 1.0, t)
     i_all, resist_all, coefficients = Current.ohm(v1, t)
-    i_tafal = Current.tafel(v1.potential, 1e-2, 1)
+    i_normal_all = np.zeros_like(i_all)
+    i_tafel = Current.tafel(v1.potential, 4e-2, 1)
+    i_tafel_normal = np.zeros_like(i_all)
+    i_mineral_all = np.zeros_like(i_all)
+    i_mineral_normal_all = np.zeros_like(i_all)
+    for n, i in enumerate(i_all):
+        i_mineral_all[n] = i - i_tafel
+        i_normal_all[n] = (i - i[0]) / (i[-1] - i[0])
+        i_mineral_normal_all[n] = (i_mineral_all[n] - i_mineral_all[n][0]) / (i[-1] - i[0])
+        i_tafel_normal[n] = i_normal_all[n] - i_mineral_normal_all[n]
 
-    fig, ax1 = plt.subplots()
-    ax2 = plt.twinx()
-
-    ax1.plot(v1.potential*1000, i_tafal, label="tafal current", linestyle="dotted")
-    for i, r, k in zip(i_all, resist_all, coefficients):
-        ax1.plot(v1.potential*1000, i, label=f"c_2 = {k:0.2e}", linestyle="solid")
-        ax2.plot(v1.potential*1000, r, label=f"r = {r[-1]:0.2f}", linestyle="dashed")
-
+    fig1, ax1 = plt.subplots()
+    ax3 = ax1.twinx()
+    colors = ['blue', 'orange', 'green', 'red', 'purple']
+    for i, r, k, color in zip(i_normal_all, resist_all, coefficients, colors):
+        ax1.plot(v1.potential*1000, i, label=f"k = {k:0.2e}", linestyle="solid", color=color)
+        ax3.plot(v1.potential*1000, r, label=f"r = {r[-1]:0.2f}", linestyle="dashed")
+    ax1.set_title("Current and Resistance vs Overpotential")
     ax1.set_xlabel("overpatential (mV)")
     ax1.set_ylabel("Normalized Current (—)")
     ax1.legend(loc='upper left')
-    ax2.set_ylabel("Normalized resistance (--)")
+    ax3.set_ylabel("Normalized resistance (--)")
+
+    fig2, ax2 = plt.subplots()
+    for i, i_mineral, i_tafel, k, color in zip(i_normal_all, i_mineral_normal_all, i_tafel_normal, coefficients, colors):
+        ax2.plot(v1.potential*1000, i, label=f"k = {k:0.2e}", linestyle="solid", color=color)
+        ax2.plot(v1.potential*1000, i_mineral, label=f"delta_i, k = {k:0.2e}", linestyle="dashdot", color=color)
+        ax2.plot(v1.potential*1000, i_tafel, label="tafal current", linestyle="dotted", color=color)
+    ax2.set_title("Mineral and Tafel Current vs Overpotential")
+    ax2.set_xlabel("overpatential (mV)")
+    ax2.set_ylabel("Normalized Current (—)")
+    ax2.legend(loc='upper left')
+
     plt.show()
 
 
