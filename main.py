@@ -99,23 +99,27 @@ def plot_current_resistance(v1: Voltage, i_normal_all, i_mineral_normal_all, i_t
     fig1, ax1 = plt.subplots()
     for i, color in zip(i_normal_all, colors):
         ax1.plot(v1.potential*1000, i,  linestyle="solid", color=color)
-    ax1.set_title("Overpotential vs Normalized Current")
-    ax1.set_xlabel("overpatential (mV)")
+    ax1.set_title("Overpotential vs Total current")
+    ax1.set_xlabel("Overpatential (mV)")
     ax1.set_ylabel("Current (—)")
 
     fig2, ax2 = plt.subplots()
     for i_mineral, color in zip(i_mineral_normal_all, colors):
         ax2.plot(v1.potential*1000, i_mineral, linestyle="dashdot", color=color)
-    ax2.set_title("Overpotential vs Mineral Current")
-    ax2.set_xlabel("overpatential (mV)")
+    ax2.set_title("Overpotential vs Mineral current")
+    ax2.set_xlabel("Overpatential (mV)")
     ax2.set_ylabel("Current (—)")
 
     fig3, ax3 = plt.subplots()
     for i_tafel, color in zip(i_tafel_normal, colors):
         ax3.plot(v1.potential*1000, i_tafel,  linestyle="dotted", color=color)
-    ax3.set_title("Overpotential vs electrochemical current")
+    ax3.set_title("Overpotential vs Electrochemical current")
     ax3.set_xlabel("overpatential (mV)")
     ax3.set_ylabel("Current (—)")
+    
+    fig1.savefig("img/overpotential_vs_normalized_current.png")
+    fig2.savefig("img/overpotential_vs_mineral_current.png")
+    fig3.savefig("img/overpotential_vs_electrochemical_current.png")
 
 
 def plot_resistance(v1: Voltage, resist_all, coefficients):
@@ -123,11 +127,13 @@ def plot_resistance(v1: Voltage, resist_all, coefficients):
     
     fig1, ax1 = plt.subplots()
     for r, k, color in zip(resist_all, coefficients, colors):
-        ax1.plot(v1.potential*1000, r, label=f"r = {r[-1]:0.2f}", linestyle="dashed")
+        ax1.plot(v1.potential*1000, r, label=f"k = {r[-1]:0.2f}", linestyle="dashed")
     ax1.set_title("Overpotential vs Resistance")
     ax1.set_xlabel("overpatential (mV)")
     ax1.set_ylabel("Normalized resistance (--)")
     ax1.legend(loc='upper left')
+    
+    fig1.savefig("img/overpotential_vs_resistance.png")
 
 
 def main():
@@ -150,7 +156,7 @@ def main():
 
     plot_current_resistance(v1, i_normal_all, i_mineral_normal_all, i_tafel_normal)
     plot_resistance(v1, resist_all, coefficients)
-    plt.show()
+    # plt.show()
 
 if __name__ == "__main__":
     main()
