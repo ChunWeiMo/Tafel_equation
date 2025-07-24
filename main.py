@@ -116,7 +116,18 @@ def plot_current_resistance(v1: Voltage, i_normal_all, i_mineral_normal_all, i_t
     ax3.set_title("Overpotential vs electrochemical current")
     ax3.set_xlabel("overpatential (mV)")
     ax3.set_ylabel("Current (—)")
-    plt.show()
+
+
+def plot_resistance(v1: Voltage, resist_all, coefficients):
+    colors = ['blue', 'orange', 'green', 'red', 'purple']
+    
+    fig1, ax1 = plt.subplots()
+    for r, k, color in zip(resist_all, coefficients, colors):
+        ax1.plot(v1.potential*1000, r, label=f"r = {r[-1]:0.2f}", linestyle="dashed")
+    ax1.set_title("Overpotential vs Resistance")
+    ax1.set_xlabel("overpatential (mV)")
+    ax1.set_ylabel("Normalized resistance (--)")
+    ax1.legend(loc='upper left')
 
 
 def main():
@@ -127,7 +138,7 @@ def main():
 
     i_normal_all = np.zeros_like(i_all)
     i_tafel = Current.tafel(v1.potential, 1e-4, 1)
-    
+
     i_tafel_normal = np.zeros_like(i_all)
     i_mineral_all = np.zeros_like(i_all)
     i_mineral_normal_all = np.zeros_like(i_all)
@@ -137,21 +148,9 @@ def main():
         i_mineral_normal_all[n] = (i_mineral_all[n] - i_mineral_all[n][0]) / (i[-1] - i[0])
         i_tafel_normal[n] = i_normal_all[n] - i_mineral_normal_all[n]
 
-    colors = ['blue', 'orange', 'green', 'red', 'purple']
-
-    fig1, ax1 = plt.subplots()
-    ax3 = ax1.twinx()
-    for i, r, k, color in zip(i_normal_all, resist_all, coefficients, colors):
-        ax1.plot(v1.potential*1000, i, label=f"k = {k:0.2e}", linestyle="solid", color=color)
-        ax3.plot(v1.potential*1000, r, label=f"r = {r[-1]:0.2f}", linestyle="dashed")
-    ax1.set_title("Current and Resistance vs Overpotential")
-    ax1.set_xlabel("overpatential (mV)")
-    ax1.set_ylabel("Normalized Current (—)")
-    ax1.legend(loc='upper left')
-    ax3.set_ylabel("Normalized resistance (--)")
-
     plot_current_resistance(v1, i_normal_all, i_mineral_normal_all, i_tafel_normal)
-
+    plot_resistance(v1, resist_all, coefficients)
+    plt.show()
 
 if __name__ == "__main__":
     main()
